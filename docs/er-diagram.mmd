@@ -1,0 +1,114 @@
+erDiagram
+    direction TB
+    Society ||..o{ Household : contains
+    Society ||..o{ TankerBooking : requests
+    Supplier ||..o{ TankerBooking : supplies
+    TankerBooking ||..o| Delivery : fulfills
+    Society ||..o{ BillingPeriod : defines_month
+    Delivery ||..o| SupplierInvoice : supplier_invoice
+    SupplierInvoice ||..o{ SupplierPayment : supplier_payment
+    BillingPeriod ||..o{ Bill : household_bill
+    Household ||..o{ Bill : owes
+    Bill ||..o{ Payment : household_payment
+    Delivery ||..o{ WaterAllocation : distributes
+    Household ||..o{ WaterAllocation : receives_water
+    Society ||..o{ User : authorizes
+    Household o|..o{ User : optional_membership
+    Society {
+        BIGINT_UNSIGNED society_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        VARCHAR(150) name "VARCHAR(150); NOT NULL"
+        VARCHAR(255) address "VARCHAR(255); NOT NULL"
+        VARCHAR(80) city "VARCHAR(80); NOT NULL"
+        VARCHAR(80) state "VARCHAR(80); NOT NULL"
+        CHAR(6) postal_code "CHAR(6); NOT NULL"
+    }
+    Household {
+        BIGINT_UNSIGNED household_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        BIGINT_UNSIGNED society_id FK "BIGINT UNSIGNED; NOT NULL"
+        VARCHAR(30) unit_number "VARCHAR(30); NOT NULL"
+        VARCHAR(120) resident_name "VARCHAR(120); NOT NULL"
+        VARCHAR(15) phone "VARCHAR(15); NOT NULL"
+        DATE joined_on "DATE; NOT NULL"
+        DATE left_on "DATE; NULL"
+        BOOLEAN is_active "BOOLEAN; NOT NULL"
+    }
+    Supplier {
+        BIGINT_UNSIGNED supplier_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        VARCHAR(150) name "VARCHAR(150); NOT NULL"
+        VARCHAR(15) phone "VARCHAR(15); NOT NULL"
+        VARCHAR(255) address "VARCHAR(255); NOT NULL"
+        VARCHAR(15) gstin UK "VARCHAR(15); NULL"
+    }
+    TankerBooking {
+        BIGINT_UNSIGNED booking_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        BIGINT_UNSIGNED society_id FK "BIGINT UNSIGNED; NOT NULL"
+        BIGINT_UNSIGNED supplier_id FK "BIGINT UNSIGNED; NOT NULL"
+        DATETIME scheduled_at "DATETIME; NOT NULL"
+        DECIMAL(12,2) requested_litres "DECIMAL(12,2); NOT NULL"
+        DECIMAL(12,2) agreed_amount "DECIMAL(12,2); NOT NULL"
+        VARCHAR(20) status "VARCHAR(20); NOT NULL"
+    }
+    Delivery {
+        BIGINT_UNSIGNED delivery_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        BIGINT_UNSIGNED booking_id FK,UK "BIGINT UNSIGNED; NOT NULL"
+        DATETIME delivered_at "DATETIME; NOT NULL"
+        DECIMAL(12,2) delivered_litres "DECIMAL(12,2); NOT NULL"
+        VARCHAR(60) receipt_number UK "VARCHAR(60); NOT NULL"
+    }
+    BillingPeriod {
+        BIGINT_UNSIGNED billing_period_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        BIGINT_UNSIGNED society_id FK "BIGINT UNSIGNED; NOT NULL"
+        DATE month_start "DATE; NOT NULL"
+        DATE due_date "DATE; NOT NULL"
+        DECIMAL(14,2) confirmed_expense "DECIMAL(14,2); NOT NULL"
+        INT_UNSIGNED eligible_households "INT UNSIGNED; NOT NULL"
+        TIMESTAMP generated_at "TIMESTAMP; NOT NULL"
+    }
+    SupplierInvoice {
+        BIGINT_UNSIGNED supplier_invoice_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        BIGINT_UNSIGNED delivery_id FK,UK "BIGINT UNSIGNED; NOT NULL"
+        VARCHAR(60) invoice_number "VARCHAR(60); NOT NULL"
+        DATE invoice_date "DATE; NOT NULL"
+        DATE due_date "DATE; NOT NULL"
+        DECIMAL(12,2) amount "DECIMAL(12,2); NOT NULL"
+        VARCHAR(16) status "VARCHAR(16); NOT NULL"
+    }
+    SupplierPayment {
+        BIGINT_UNSIGNED supplier_payment_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        BIGINT_UNSIGNED supplier_invoice_id FK "BIGINT UNSIGNED; NOT NULL"
+        DATE paid_on "DATE; NOT NULL"
+        DECIMAL(12,2) amount "DECIMAL(12,2); NOT NULL"
+        VARCHAR(16) method "VARCHAR(16); NOT NULL"
+        VARCHAR(80) reference_number UK "VARCHAR(80); NOT NULL"
+    }
+    Bill {
+        BIGINT_UNSIGNED bill_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        BIGINT_UNSIGNED billing_period_id FK "BIGINT UNSIGNED; NOT NULL"
+        BIGINT_UNSIGNED society_id FK "BIGINT UNSIGNED; NOT NULL"
+        BIGINT_UNSIGNED household_id FK "BIGINT UNSIGNED; NOT NULL"
+        DECIMAL(12,2) amount "DECIMAL(12,2); NOT NULL"
+    }
+    Payment {
+        BIGINT_UNSIGNED payment_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        BIGINT_UNSIGNED bill_id FK "BIGINT UNSIGNED; NOT NULL"
+        DATE paid_on "DATE; NOT NULL"
+        DECIMAL(12,2) amount "DECIMAL(12,2); NOT NULL"
+        VARCHAR(16) method "VARCHAR(16); NOT NULL"
+        VARCHAR(80) reference_number UK "VARCHAR(80); NOT NULL"
+    }
+    WaterAllocation {
+        BIGINT_UNSIGNED water_allocation_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        BIGINT_UNSIGNED delivery_id FK "BIGINT UNSIGNED; NOT NULL"
+        BIGINT_UNSIGNED household_id FK "BIGINT UNSIGNED; NOT NULL"
+        DECIMAL(12,2) allocated_litres "DECIMAL(12,2); NOT NULL"
+    }
+    User {
+        BIGINT_UNSIGNED user_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        BIGINT_UNSIGNED society_id FK "BIGINT UNSIGNED; NOT NULL"
+        BIGINT_UNSIGNED household_id FK "BIGINT UNSIGNED; NULL"
+        VARCHAR(120) full_name "VARCHAR(120); NOT NULL"
+        VARCHAR(254) email UK "VARCHAR(254); NOT NULL"
+        VARCHAR(255) password_hash "VARCHAR(255); NULL"
+        VARCHAR(20) role "VARCHAR(20); NOT NULL"
+        BOOLEAN is_active "BOOLEAN; NOT NULL"
+    }

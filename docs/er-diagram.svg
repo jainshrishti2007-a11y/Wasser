@@ -1,0 +1,193 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2100" height="2360" viewBox="0 0 2100 2360" role="img" aria-labelledby="title desc">
+<title id="title">WASSER complete database ER diagram</title>
+<desc id="desc">12 tables with all attributes and 14 foreign keys. Supplier billing and household billing have separate labeled entities. Endpoint numbers and relationship key show actual multiplicities.</desc>
+<style>text{font-family:Arial,sans-serif;fill:#073B4C}.attr{font-family:Consolas,monospace;font-size:15px}.edge{fill:none;stroke:#073B4C;stroke-width:2}.tag{font-size:16px;font-weight:bold;paint-order:stroke;stroke:white;stroke-width:6;stroke-linejoin:round}</style>
+<rect width="2100" height="2360" fill="#FFFFFF"/>
+<text x="100" y="55" font-size="34" font-weight="bold">WASSER · Entity Relationship Diagram</text>
+<text x="100" y="90" font-size="21">12 tables · 14 foreign keys · Source: database/schema.sql · Aqua Mint</text>
+<text x="100" y="123" font-size="18">PK primary key | FK foreign-key component | UK single-column unique | ? nullable | U unsigned</text>
+<text x="100" y="149" font-size="18">Each line connects a parent to a child; endpoint labels give multiplicity. Full constraints appear in the key below.</text>
+<path class="edge" d="M 610 263 L 790 263"/>
+<text class="tag" x="615" y="256">R1 · 1</text>
+<text class="tag" x="733" y="256">0..*</text>
+<path class="edge" d="M 610 436 H 651 V 540 H 1095.0 V 610"/>
+<text class="tag" x="615" y="429">R2 · 1</text>
+<text class="tag" x="1100.0" y="603">0..*</text>
+<path class="edge" d="M 610 709 L 790 709"/>
+<text class="tag" x="615" y="702">R3 · 1</text>
+<text class="tag" x="733" y="702">0..*</text>
+<path class="edge" d="M 790 858 H 743 V 1000 H 380.0 V 1050"/>
+<text class="tag" x="685" y="851">R4 · 1</text>
+<text class="tag" x="385.0" y="1043">0..1</text>
+<path class="edge" d="M 610 436 H 660 V 540 H 1785.0 V 610"/>
+<text class="tag" x="615" y="429">R5 · 1</text>
+<text class="tag" x="1790.0" y="603">0..*</text>
+<path class="edge" d="M 300 1380 L 300 1490"/>
+<text class="tag" x="305" y="1403">R6 · 1</text>
+<text class="tag" x="305" y="1483">0..1</text>
+<path class="edge" d="M 610 1601 L 790 1601"/>
+<text class="tag" x="615" y="1594">R7 · 1</text>
+<text class="tag" x="733" y="1594">0..*</text>
+<path class="edge" d="M 1680 940 L 1680 1050"/>
+<text class="tag" x="1685" y="963">R8 · 1</text>
+<text class="tag" x="1685" y="1043">0..*</text>
+<path class="edge" d="M 1300 400 H 1362 V 1020 H 1735.0 V 1050"/>
+<text class="tag" x="1305" y="393">R9 · 1</text>
+<text class="tag" x="1740.0" y="1043">0..*</text>
+<path class="edge" d="M 1680 1380 L 1680 1490"/>
+<text class="tag" x="1685" y="1403">R10 · 1</text>
+<text class="tag" x="1685" y="1483">0..*</text>
+<path class="edge" d="M 610 1173 L 790 1173"/>
+<text class="tag" x="615" y="1166">R11 · 1</text>
+<text class="tag" x="733" y="1166">0..*</text>
+<path class="edge" d="M 990 500 L 990 1050"/>
+<text class="tag" x="995" y="523">R12 · 1</text>
+<text class="tag" x="995" y="1043">0..*</text>
+<path class="edge" d="M 355.0 170 V 158 H 1735.0 V 170"/>
+<text class="tag" x="360.0" y="163">R13 · 1</text>
+<text class="tag" x="1740.0" y="163">0..*</text>
+<path class="edge" d="M 1300 302 L 1480 302"/>
+<text class="tag" x="1305" y="295">R14 · 0..1</text>
+<text class="tag" x="1423" y="295">0..*</text>
+<rect x="100" y="170" width="510" height="330" rx="9" fill="#E8FFF8" stroke="#073B4C" stroke-width="2"/>
+<rect x="101" y="171" width="508" height="65" rx="8" fill="#6EE7C8"/>
+<text x="114" y="197" font-size="23" font-weight="bold">Society</text>
+<text x="114" y="221" font-size="14">SUPPLY / MEMBERSHIP</text>
+<text class="attr" x="113" y="260">society_id : BIGINT U PK</text>
+<text class="attr" x="113" y="285">name : VARCHAR(150) </text>
+<text class="attr" x="113" y="310">address : VARCHAR(255) </text>
+<text class="attr" x="113" y="335">city : VARCHAR(80) </text>
+<text class="attr" x="113" y="360">state : VARCHAR(80) </text>
+<text class="attr" x="113" y="385">postal_code : CHAR(6) </text>
+<rect x="790" y="170" width="510" height="330" rx="9" fill="#E8FFF8" stroke="#073B4C" stroke-width="2"/>
+<rect x="791" y="171" width="508" height="65" rx="8" fill="#6EE7C8"/>
+<text x="804" y="197" font-size="23" font-weight="bold">Household</text>
+<text x="804" y="221" font-size="14">SUPPLY / MEMBERSHIP</text>
+<text class="attr" x="803" y="260">household_id : BIGINT U PK</text>
+<text class="attr" x="803" y="285">society_id : BIGINT U FK</text>
+<text class="attr" x="803" y="310">unit_number : VARCHAR(30) </text>
+<text class="attr" x="803" y="335">resident_name : VARCHAR(120) </text>
+<text class="attr" x="803" y="360">phone : VARCHAR(15) </text>
+<text class="attr" x="803" y="385">joined_on : DATE </text>
+<text class="attr" x="803" y="410">left_on? : DATE </text>
+<text class="attr" x="803" y="435">is_active : BOOLEAN </text>
+<rect x="100" y="610" width="510" height="330" rx="9" fill="#E8FFF8" stroke="#073B4C" stroke-width="2"/>
+<rect x="101" y="611" width="508" height="65" rx="8" fill="#6EE7C8"/>
+<text x="114" y="637" font-size="23" font-weight="bold">Supplier</text>
+<text x="114" y="661" font-size="14">SUPPLY / MEMBERSHIP</text>
+<text class="attr" x="113" y="700">supplier_id : BIGINT U PK</text>
+<text class="attr" x="113" y="725">name : VARCHAR(150) </text>
+<text class="attr" x="113" y="750">phone : VARCHAR(15) </text>
+<text class="attr" x="113" y="775">address : VARCHAR(255) </text>
+<text class="attr" x="113" y="800">gstin? : VARCHAR(15) UK</text>
+<rect x="790" y="610" width="510" height="330" rx="9" fill="#E8FFF8" stroke="#073B4C" stroke-width="2"/>
+<rect x="791" y="611" width="508" height="65" rx="8" fill="#6EE7C8"/>
+<text x="804" y="637" font-size="23" font-weight="bold">TankerBooking</text>
+<text x="804" y="661" font-size="14">SUPPLY / MEMBERSHIP</text>
+<text class="attr" x="803" y="700">booking_id : BIGINT U PK</text>
+<text class="attr" x="803" y="725">society_id : BIGINT U FK</text>
+<text class="attr" x="803" y="750">supplier_id : BIGINT U FK</text>
+<text class="attr" x="803" y="775">scheduled_at : DATETIME </text>
+<text class="attr" x="803" y="800">requested_litres : DECIMAL(12,2) </text>
+<text class="attr" x="803" y="825">agreed_amount : DECIMAL(12,2) </text>
+<text class="attr" x="803" y="850">status : VARCHAR(20) </text>
+<rect x="100" y="1050" width="510" height="330" rx="9" fill="#E8FFF8" stroke="#073B4C" stroke-width="2"/>
+<rect x="101" y="1051" width="508" height="65" rx="8" fill="#6EE7C8"/>
+<text x="114" y="1077" font-size="23" font-weight="bold">Delivery</text>
+<text x="114" y="1101" font-size="14">SUPPLY / MEMBERSHIP</text>
+<text class="attr" x="113" y="1140">delivery_id : BIGINT U PK</text>
+<text class="attr" x="113" y="1165">booking_id : BIGINT U FK,UK</text>
+<text class="attr" x="113" y="1190">delivered_at : DATETIME </text>
+<text class="attr" x="113" y="1215">delivered_litres : DECIMAL(12,2) </text>
+<text class="attr" x="113" y="1240">receipt_number : VARCHAR(60) UK</text>
+<rect x="1480" y="610" width="510" height="330" rx="9" fill="#E8FFF8" stroke="#073B4C" stroke-width="2"/>
+<rect x="1481" y="611" width="508" height="65" rx="8" fill="#6EE7C8"/>
+<text x="1494" y="637" font-size="23" font-weight="bold">BillingPeriod</text>
+<text x="1494" y="661" font-size="14">HOUSEHOLD BILLING</text>
+<text class="attr" x="1493" y="700">billing_period_id : BIGINT U PK</text>
+<text class="attr" x="1493" y="725">society_id : BIGINT U FK</text>
+<text class="attr" x="1493" y="750">month_start : DATE </text>
+<text class="attr" x="1493" y="775">due_date : DATE </text>
+<text class="attr" x="1493" y="800">confirmed_expense : DECIMAL(14,2) </text>
+<text class="attr" x="1493" y="825">eligible_households : INT U </text>
+<text class="attr" x="1493" y="850">generated_at : TIMESTAMP </text>
+<rect x="100" y="1490" width="510" height="330" rx="9" fill="#E8FFF8" stroke="#073B4C" stroke-width="2"/>
+<rect x="101" y="1491" width="508" height="65" rx="8" fill="#00A6A6"/>
+<text x="114" y="1517" font-size="23" font-weight="bold">SupplierInvoice</text>
+<text x="114" y="1541" font-size="14">SUPPLIER BILLING</text>
+<text class="attr" x="113" y="1580">supplier_invoice_id : BIGINT U PK</text>
+<text class="attr" x="113" y="1605">delivery_id : BIGINT U FK,UK</text>
+<text class="attr" x="113" y="1630">invoice_number : VARCHAR(60) </text>
+<text class="attr" x="113" y="1655">invoice_date : DATE </text>
+<text class="attr" x="113" y="1680">due_date : DATE </text>
+<text class="attr" x="113" y="1705">amount : DECIMAL(12,2) </text>
+<text class="attr" x="113" y="1730">status : VARCHAR(16) </text>
+<rect x="790" y="1490" width="510" height="330" rx="9" fill="#E8FFF8" stroke="#073B4C" stroke-width="2"/>
+<rect x="791" y="1491" width="508" height="65" rx="8" fill="#00A6A6"/>
+<text x="804" y="1517" font-size="23" font-weight="bold">SupplierPayment</text>
+<text x="804" y="1541" font-size="14">SUPPLIER BILLING</text>
+<text class="attr" x="803" y="1580">supplier_payment_id : BIGINT U PK</text>
+<text class="attr" x="803" y="1605">supplier_invoice_id : BIGINT U FK</text>
+<text class="attr" x="803" y="1630">paid_on : DATE </text>
+<text class="attr" x="803" y="1655">amount : DECIMAL(12,2) </text>
+<text class="attr" x="803" y="1680">method : VARCHAR(16) </text>
+<text class="attr" x="803" y="1705">reference_number : VARCHAR(80) UK</text>
+<rect x="1480" y="1050" width="510" height="330" rx="9" fill="#E8FFF8" stroke="#073B4C" stroke-width="2"/>
+<rect x="1481" y="1051" width="508" height="65" rx="8" fill="#6EE7C8"/>
+<text x="1494" y="1077" font-size="23" font-weight="bold">Bill</text>
+<text x="1494" y="1101" font-size="14">HOUSEHOLD BILLING</text>
+<text class="attr" x="1493" y="1140">bill_id : BIGINT U PK</text>
+<text class="attr" x="1493" y="1165">billing_period_id : BIGINT U FK</text>
+<text class="attr" x="1493" y="1190">society_id : BIGINT U FK</text>
+<text class="attr" x="1493" y="1215">household_id : BIGINT U FK</text>
+<text class="attr" x="1493" y="1240">amount : DECIMAL(12,2) </text>
+<rect x="1480" y="1490" width="510" height="330" rx="9" fill="#E8FFF8" stroke="#073B4C" stroke-width="2"/>
+<rect x="1481" y="1491" width="508" height="65" rx="8" fill="#6EE7C8"/>
+<text x="1494" y="1517" font-size="23" font-weight="bold">Payment</text>
+<text x="1494" y="1541" font-size="14">HOUSEHOLD BILLING</text>
+<text class="attr" x="1493" y="1580">payment_id : BIGINT U PK</text>
+<text class="attr" x="1493" y="1605">bill_id : BIGINT U FK</text>
+<text class="attr" x="1493" y="1630">paid_on : DATE </text>
+<text class="attr" x="1493" y="1655">amount : DECIMAL(12,2) </text>
+<text class="attr" x="1493" y="1680">method : VARCHAR(16) </text>
+<text class="attr" x="1493" y="1705">reference_number : VARCHAR(80) UK</text>
+<rect x="790" y="1050" width="510" height="330" rx="9" fill="#E8FFF8" stroke="#073B4C" stroke-width="2"/>
+<rect x="791" y="1051" width="508" height="65" rx="8" fill="#6EE7C8"/>
+<text x="804" y="1077" font-size="23" font-weight="bold">WaterAllocation</text>
+<text x="804" y="1101" font-size="14">SUPPLY / MEMBERSHIP</text>
+<text class="attr" x="803" y="1140">water_allocation_id : BIGINT U PK</text>
+<text class="attr" x="803" y="1165">delivery_id : BIGINT U FK</text>
+<text class="attr" x="803" y="1190">household_id : BIGINT U FK</text>
+<text class="attr" x="803" y="1215">allocated_litres : DECIMAL(12,2) </text>
+<rect x="1480" y="170" width="510" height="330" rx="9" fill="#E8FFF8" stroke="#073B4C" stroke-width="2"/>
+<rect x="1481" y="171" width="508" height="65" rx="8" fill="#6EE7C8"/>
+<text x="1494" y="197" font-size="23" font-weight="bold">User</text>
+<text x="1494" y="221" font-size="14">SUPPLY / MEMBERSHIP</text>
+<text class="attr" x="1493" y="260">user_id : BIGINT U PK</text>
+<text class="attr" x="1493" y="285">society_id : BIGINT U FK</text>
+<text class="attr" x="1493" y="310">household_id? : BIGINT U FK</text>
+<text class="attr" x="1493" y="335">full_name : VARCHAR(120) </text>
+<text class="attr" x="1493" y="360">email : VARCHAR(254) UK</text>
+<text class="attr" x="1493" y="385">password_hash? : VARCHAR(255) </text>
+<text class="attr" x="1493" y="410">role : VARCHAR(20) </text>
+<text class="attr" x="1493" y="435">is_active : BOOLEAN </text>
+<text x="100" y="1945" font-size="25" font-weight="bold">Relationship key · parent [multiplicity] → child [multiplicity]</text>
+<text x="100" y="1980" font-size="18">R1: Society [1] → Household [0..*]</text>
+<text x="100" y="2013" font-size="18">R2: Society [1] → TankerBooking [0..*]</text>
+<text x="100" y="2046" font-size="18">R3: Supplier [1] → TankerBooking [0..*]</text>
+<text x="100" y="2079" font-size="18">R4: TankerBooking [1] → Delivery [0..1]</text>
+<text x="100" y="2112" font-size="18">R5: Society [1] → BillingPeriod [0..*]</text>
+<text x="100" y="2145" font-size="18">R6: Delivery [1] → SupplierInvoice [0..1]</text>
+<text x="100" y="2178" font-size="18">R7: SupplierInvoice [1] → SupplierPayment [0..*]</text>
+<text x="1100" y="1980" font-size="18">R8: BillingPeriod [1] → Bill [0..*]</text>
+<text x="1100" y="2013" font-size="18">R9: Household [1] → Bill [0..*]</text>
+<text x="1100" y="2046" font-size="18">R10: Bill [1] → Payment [0..*]</text>
+<text x="1100" y="2079" font-size="18">R11: Delivery [1] → WaterAllocation [0..*]</text>
+<text x="1100" y="2112" font-size="18">R12: Household [1] → WaterAllocation [0..*]</text>
+<text x="1100" y="2145" font-size="18">R13: Society [1] → User [0..*]</text>
+<text x="1100" y="2178" font-size="18">R14: Household [0..1] → User [0..*]</text>
+<text x="100" y="2230" font-size="18">Composite FKs: Bill(period, society) → BillingPeriod; Bill(household, society) → Household;</text>
+<text x="100" y="2258" font-size="18">User(household, society) → Household. Exact column names and composite unique keys: docs/er-diagram.md.</text>
+<text x="100" y="2295" font-size="18">Supplier invoices feed monthly expense calculation through GenerateMonthlyBills; no direct invoice-to-period FK exists.</text>
+<text x="100" y="2325" font-size="18">Views (not tables): HouseholdBalance, SupplierInvoiceBalance. PKs auto-increment. SQL is unchanged.</text>
+</svg>

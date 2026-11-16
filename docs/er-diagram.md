@@ -1,218 +1,205 @@
-# WASSER database — Phase 2
+# WASSER Entity Relationship Diagram
 
-Requires MySQL **8.0.16+** with InnoDB and strict SQL mode. Monetary values are INR, stored as DECIMAL; litres are DECIMAL. Times are local society wall-clock times (Indian sample societies use IST).
+Source of truth: [`database/schema.sql`](../database/schema.sql). This document describes the SQL definitions, including nullable and unique constraints, without connecting to or changing the database. There are **12 base tables, 14 foreign-key constraints, and 2 derived views**. Views are described below and are not extra entities.
+
+Open the [printable SVG](er-diagram.svg) in a browser and print in landscape (A3 recommended, fit to page). It is a vector diagram and stays sharp when enlarged. The [standalone Mermaid source](er-diagram.mmd) supports rendering in Mermaid tools. The SVG uses the same parsed attributes and relationships, with explicit endpoint multiplicities and a numbered relationship key.
+
+## Complete Mermaid ER diagram
+
+`PK` = primary key; `FK` = foreign-key component; `UK` = single-column unique constraint. Composite unique keys are listed separately below. Types retain SQL lengths, precision and scale; underscores represent spaces in Mermaid type tokens (for example `BIGINT_UNSIGNED`). Exact SQL types and nullability also appear in attribute comments. All primary keys are auto-incrementing.
+
+`||` means exactly one, `o|` zero or one, and `o{` zero or many. Dotted lines are non-identifying relationships: each child has its own primary key, independent of the foreign key. A parent can have zero children unless SQL actually enforces their existence.
 
 ```mermaid
 erDiagram
-    Society ||--o{ Household : contains
-    Society ||--o{ TankerBooking : requests
-    Supplier ||--o{ TankerBooking : supplies
-    TankerBooking ||--o| Delivery : completes
-    Delivery ||--o| SupplierInvoice : invoiced
-    SupplierInvoice ||--o{ SupplierPayment : receives
-    Society ||--o{ BillingPeriod : closes
-    BillingPeriod ||--|{ Bill : generates
-    Household ||--o{ Bill : owes
-    Bill ||--o{ Payment : receives
-    Delivery ||--o{ WaterAllocation : distributes
-    Household ||--o{ WaterAllocation : receives
-    Society ||--o{ User : authorizes
-    Household o|--o{ User : associates
+    direction TB
+    Society ||..o{ Household : contains
+    Society ||..o{ TankerBooking : requests
+    Supplier ||..o{ TankerBooking : supplies
+    TankerBooking ||..o| Delivery : fulfills
+    Society ||..o{ BillingPeriod : defines_month
+    Delivery ||..o| SupplierInvoice : supplier_invoice
+    SupplierInvoice ||..o{ SupplierPayment : supplier_payment
+    BillingPeriod ||..o{ Bill : household_bill
+    Household ||..o{ Bill : owes
+    Bill ||..o{ Payment : household_payment
+    Delivery ||..o{ WaterAllocation : distributes
+    Household ||..o{ WaterAllocation : receives_water
+    Society ||..o{ User : authorizes
+    Household o|..o{ User : optional_membership
     Society {
-        bigint society_id PK
-        varchar name
-        varchar address
-        varchar city
-        varchar state
-        char postal_code
+        BIGINT_UNSIGNED society_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        VARCHAR(150) name "VARCHAR(150); NOT NULL"
+        VARCHAR(255) address "VARCHAR(255); NOT NULL"
+        VARCHAR(80) city "VARCHAR(80); NOT NULL"
+        VARCHAR(80) state "VARCHAR(80); NOT NULL"
+        CHAR(6) postal_code "CHAR(6); NOT NULL"
     }
     Household {
-        bigint household_id PK
-        bigint society_id FK
-        varchar unit_number "unique per society"
-        varchar resident_name
-        date joined_on
-        date left_on
-        boolean is_active
+        BIGINT_UNSIGNED household_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        BIGINT_UNSIGNED society_id FK "BIGINT UNSIGNED; NOT NULL"
+        VARCHAR(30) unit_number "VARCHAR(30); NOT NULL"
+        VARCHAR(120) resident_name "VARCHAR(120); NOT NULL"
+        VARCHAR(15) phone "VARCHAR(15); NOT NULL"
+        DATE joined_on "DATE; NOT NULL"
+        DATE left_on "DATE; NULL"
+        BOOLEAN is_active "BOOLEAN; NOT NULL"
     }
     Supplier {
-        bigint supplier_id PK
-        varchar name
-        varchar gstin UK
+        BIGINT_UNSIGNED supplier_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        VARCHAR(150) name "VARCHAR(150); NOT NULL"
+        VARCHAR(15) phone "VARCHAR(15); NOT NULL"
+        VARCHAR(255) address "VARCHAR(255); NOT NULL"
+        VARCHAR(15) gstin UK "VARCHAR(15); NULL"
     }
     TankerBooking {
-        bigint booking_id PK
-        bigint society_id FK
-        bigint supplier_id FK
-        datetime scheduled_at
-        decimal requested_litres
-        decimal agreed_amount
-        varchar status
+        BIGINT_UNSIGNED booking_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        BIGINT_UNSIGNED society_id FK "BIGINT UNSIGNED; NOT NULL"
+        BIGINT_UNSIGNED supplier_id FK "BIGINT UNSIGNED; NOT NULL"
+        DATETIME scheduled_at "DATETIME; NOT NULL"
+        DECIMAL(12,2) requested_litres "DECIMAL(12,2); NOT NULL"
+        DECIMAL(12,2) agreed_amount "DECIMAL(12,2); NOT NULL"
+        VARCHAR(20) status "VARCHAR(20); NOT NULL"
     }
     Delivery {
-        bigint delivery_id PK
-        bigint booking_id FK,UK
-        datetime delivered_at
-        decimal delivered_litres
-        varchar receipt_number UK
-    }
-    SupplierInvoice {
-        bigint supplier_invoice_id PK
-        bigint delivery_id FK,UK
-        varchar invoice_number
-        date invoice_date
-        date due_date
-        decimal amount
-        varchar status
-    }
-    SupplierPayment {
-        bigint supplier_payment_id PK
-        bigint supplier_invoice_id FK
-        decimal amount
-        date paid_on
-        varchar reference_number UK
+        BIGINT_UNSIGNED delivery_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        BIGINT_UNSIGNED booking_id FK,UK "BIGINT UNSIGNED; NOT NULL"
+        DATETIME delivered_at "DATETIME; NOT NULL"
+        DECIMAL(12,2) delivered_litres "DECIMAL(12,2); NOT NULL"
+        VARCHAR(60) receipt_number UK "VARCHAR(60); NOT NULL"
     }
     BillingPeriod {
-        bigint billing_period_id PK
-        bigint society_id FK
-        date month_start "unique with society"
-        date due_date
-        decimal confirmed_expense
-        int eligible_households
+        BIGINT_UNSIGNED billing_period_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        BIGINT_UNSIGNED society_id FK "BIGINT UNSIGNED; NOT NULL"
+        DATE month_start "DATE; NOT NULL"
+        DATE due_date "DATE; NOT NULL"
+        DECIMAL(14,2) confirmed_expense "DECIMAL(14,2); NOT NULL"
+        INT_UNSIGNED eligible_households "INT UNSIGNED; NOT NULL"
+        TIMESTAMP generated_at "TIMESTAMP; NOT NULL"
+    }
+    SupplierInvoice {
+        BIGINT_UNSIGNED supplier_invoice_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        BIGINT_UNSIGNED delivery_id FK,UK "BIGINT UNSIGNED; NOT NULL"
+        VARCHAR(60) invoice_number "VARCHAR(60); NOT NULL"
+        DATE invoice_date "DATE; NOT NULL"
+        DATE due_date "DATE; NOT NULL"
+        DECIMAL(12,2) amount "DECIMAL(12,2); NOT NULL"
+        VARCHAR(16) status "VARCHAR(16); NOT NULL"
+    }
+    SupplierPayment {
+        BIGINT_UNSIGNED supplier_payment_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        BIGINT_UNSIGNED supplier_invoice_id FK "BIGINT UNSIGNED; NOT NULL"
+        DATE paid_on "DATE; NOT NULL"
+        DECIMAL(12,2) amount "DECIMAL(12,2); NOT NULL"
+        VARCHAR(16) method "VARCHAR(16); NOT NULL"
+        VARCHAR(80) reference_number UK "VARCHAR(80); NOT NULL"
     }
     Bill {
-        bigint bill_id PK
-        bigint billing_period_id FK
-        bigint society_id FK
-        bigint household_id FK
-        decimal amount
+        BIGINT_UNSIGNED bill_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        BIGINT_UNSIGNED billing_period_id FK "BIGINT UNSIGNED; NOT NULL"
+        BIGINT_UNSIGNED society_id FK "BIGINT UNSIGNED; NOT NULL"
+        BIGINT_UNSIGNED household_id FK "BIGINT UNSIGNED; NOT NULL"
+        DECIMAL(12,2) amount "DECIMAL(12,2); NOT NULL"
     }
     Payment {
-        bigint payment_id PK
-        bigint bill_id FK
-        decimal amount
-        date paid_on
-        varchar reference_number UK
+        BIGINT_UNSIGNED payment_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        BIGINT_UNSIGNED bill_id FK "BIGINT UNSIGNED; NOT NULL"
+        DATE paid_on "DATE; NOT NULL"
+        DECIMAL(12,2) amount "DECIMAL(12,2); NOT NULL"
+        VARCHAR(16) method "VARCHAR(16); NOT NULL"
+        VARCHAR(80) reference_number UK "VARCHAR(80); NOT NULL"
     }
     WaterAllocation {
-        bigint water_allocation_id PK
-        bigint delivery_id FK
-        bigint household_id FK
-        decimal allocated_litres
+        BIGINT_UNSIGNED water_allocation_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        BIGINT_UNSIGNED delivery_id FK "BIGINT UNSIGNED; NOT NULL"
+        BIGINT_UNSIGNED household_id FK "BIGINT UNSIGNED; NOT NULL"
+        DECIMAL(12,2) allocated_litres "DECIMAL(12,2); NOT NULL"
     }
     User {
-        bigint user_id PK
-        bigint society_id FK
-        bigint household_id FK "nullable"
-        varchar email UK
-        varchar password_hash "nullable: login disabled"
-        varchar role
+        BIGINT_UNSIGNED user_id PK "BIGINT UNSIGNED; NOT NULL; AUTO_INCREMENT"
+        BIGINT_UNSIGNED society_id FK "BIGINT UNSIGNED; NOT NULL"
+        BIGINT_UNSIGNED household_id FK "BIGINT UNSIGNED; NULL"
+        VARCHAR(120) full_name "VARCHAR(120); NOT NULL"
+        VARCHAR(254) email UK "VARCHAR(254); NOT NULL"
+        VARCHAR(255) password_hash "VARCHAR(255); NULL"
+        VARCHAR(20) role "VARCHAR(20); NOT NULL"
+        BOOLEAN is_active "BOOLEAN; NOT NULL"
     }
 ```
 
-## Model and rules
+## Relationships and cardinalities
 
-The 11 requested entities are separate tables. `BillingPeriod` adds a monthly expense and eligibility snapshot, keeping those facts out of individual household bills. Supplier invoices describe actual confirmed expenses; booking amounts are quotations. One invoice per delivery is supported. `invoice_number` is a display reference; the internal invoice ID and unique delivery identify an invoice. Consolidated supplier invoices and credit notes are future extensions.
+| ID | Parent → child | Parent per child | Children per parent | Actual foreign key |
+| --- | --- | --- | --- | --- |
+| R1 | Society → Household | 1 | 0..* | `Household(society_id)` → `Society(society_id)` |
+| R2 | Society → TankerBooking | 1 | 0..* | `TankerBooking(society_id)` → `Society(society_id)` |
+| R3 | Supplier → TankerBooking | 1 | 0..* | `TankerBooking(supplier_id)` → `Supplier(supplier_id)` |
+| R4 | TankerBooking → Delivery | 1 | 0..1 | `Delivery(booking_id)` → `TankerBooking(booking_id)` |
+| R5 | Society → BillingPeriod | 1 | 0..* | `BillingPeriod(society_id)` → `Society(society_id)` |
+| R6 | Delivery → SupplierInvoice | 1 | 0..1 | `SupplierInvoice(delivery_id)` → `Delivery(delivery_id)` |
+| R7 | SupplierInvoice → SupplierPayment | 1 | 0..* | `SupplierPayment(supplier_invoice_id)` → `SupplierInvoice(supplier_invoice_id)` |
+| R8 | BillingPeriod → Bill | 1 | 0..* | `Bill(billing_period_id, society_id)` → `BillingPeriod(billing_period_id, society_id)` |
+| R9 | Household → Bill | 1 | 0..* | `Bill(household_id, society_id)` → `Household(household_id, society_id)` |
+| R10 | Bill → Payment | 1 | 0..* | `Payment(bill_id)` → `Bill(bill_id)` |
+| R11 | Delivery → WaterAllocation | 1 | 0..* | `WaterAllocation(delivery_id)` → `Delivery(delivery_id)` |
+| R12 | Household → WaterAllocation | 1 | 0..* | `WaterAllocation(household_id)` → `Household(household_id)` |
+| R13 | Society → User | 1 | 0..* | `User(society_id)` → `Society(society_id)` |
+| R14 | Household → User | 0..1 | 0..* | `User(household_id, society_id)` → `Household(household_id, society_id)` |
 
-Tables are in 3NF where practical. `Bill.society_id` is deliberate controlled redundancy: two composite foreign keys prevent a household from receiving another society's bill. User membership uses the same technique. Balances and paid statuses are derived in `HouseholdBalance` and `SupplierInvoiceBalance`; they are not stored and cannot drift as partial payments accumulate. Indexes cover foreign keys, monthly invoice selection, active household selection, scheduled bookings, and payment histories.
+## Unique constraints
 
-Booking transitions are `REQUESTED → CONFIRMED → DISPATCHED → DELIVERED`, with cancellation allowed only from REQUESTED or CONFIRMED. Insert bookings as REQUESTED. Insert a delivery only after dispatch; its trigger marks the booking DELIVERED. Delivered and cancelled states are terminal. Receipts are immutable. Supplier invoices may start confirmed, or move from DRAFT to CONFIRMED/VOID; confirmed/void invoices are immutable. Positive amounts/volumes and date checks are enforced. Deletes use restrictive foreign keys; there are no cascading record deletes.
-
-Payments are append-only, positive, and limited to their parent balance. Parent-row locks serialize concurrent payments, with locking balance reads to avoid stale repeatable-read snapshots. Water allocation also locks its delivery, checks society membership, and prevents allocating more litres than received. Unallocated litres are allowed. Allocation volumes do not change the equal-cost billing rule.
-
-## Monthly billing
-
-Call the procedure **outside an existing transaction**:
-
-```sql
-CALL GenerateMonthlyBills(1, '2026-11-01', '2026-12-10');
-```
-
-Replace `1` with the real society ID. It totals CONFIRMED invoices whose **invoice_date** is in the requested month. Each invoice necessarily has a delivery. Supplier payment dates do not affect the billed expense. Eligible households are currently active and have a residency interval overlapping that month (`joined_on <= month end`, `left_on` absent or at least month start). The policy includes a household joining midmonth with a full equal share. For retrospective billing, maintain household activity/dates appropriately before generation; this version does not keep a historical occupancy ledger.
-
-The procedure locks the society, checks for duplicate generation, locks eligible household rows, records the snapshot, and inserts all bills in one transaction. Bills sum exactly to confirmed expenses: integer paise are divided equally, and leftover paise go to ascending household IDs. The largest and smallest bills differ by at most INR 0.01. No households or no expenses causes a clear error rather than empty billing. A unique society/month period and unique period/household bill prevent duplicates.
-
-Invoice inserts/updates/deletes lock the same society row and reject changes in an already billed invoice month, so late expenses must be resolved **before** generation. Snapshot periods and bills are immutable. Corrections after closing need a separately designed audited adjustment/credit-note process; do not edit closed financial records. Concurrent operations may produce an InnoDB deadlock; an application should retry the entire failed transaction.
-
-Application code must generate bills through `GenerateMonthlyBills`, rather than direct inserts into Bill/BillingPeriod, to enforce the equal-distribution workflow. For production, use a separate migration account and restrict the runtime account to required SELECT/INSERT and procedure EXECUTE privileges; the current development account has broad privileges. Database ownership is not an authorization boundary. API authentication, role enforcement, and secure password hashing are later backend work.
-
-## Installation and verification
-
-Preserved `database/001_create_database.sql` unchanged. The schema targets the existing `wasser` database and contains no DROP, TRUNCATE, ALTER, or record deletion. Installation is **one-time**, not a migration system. MySQL DDL implicitly commits: a failed installation can leave some created objects. Inspect them before recovery; do not rerun or drop objects blindly.
-
-From the repository root in PowerShell, the included runner loads the existing server environment without displaying credentials:
-
-```powershell
-node server/scripts/run-sql.js schema.sql
-node server/scripts/run-sql.js seed.sql
-node server/scripts/run-sql.js queries.sql
-npm.cmd run db:check
-```
-
-Run each command only after the preceding one succeeds. The runner refuses schema installation in a nonempty database and refuses repeat demo seeding. `seed.sql` contains fictional data and uses generated IDs, with example.invalid email addresses and NULL password hashes (no usable seeded logins). Seed installation has several transactions because monthly generation owns its transaction; failure after a commit requires inspection rather than blind repetition.
-
-Alternatively, connect with MySQL CLI from the repository root; `-p` prompts for the password:
-
-```powershell
-mysql -h localhost -P 3306 -u wasser_app -p wasser
-```
-
-Inside that client, execute each line after the previous succeeds:
-
-```sql
-SOURCE database/schema.sql;
-SOURCE database/seed.sql;
-SOURCE database/queries.sql;
-SHOW FULL TABLES;
-SELECT TABLE_NAME FROM information_schema.TABLES
-WHERE TABLE_SCHEMA = 'wasser' AND TABLE_TYPE = 'BASE TABLE'
-ORDER BY TABLE_NAME;
-SELECT ROUTINE_NAME FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA = 'wasser';
-SHOW TRIGGERS FROM wasser;
-```
-
-The native client's SOURCE command may continue after individual statement errors. Inspect its output and confirm the full object inventory before sourcing seed.sql; the Node runner stops on the first error and checks the trigger/procedure prerequisites before seeding.
-
-Expect **12 base tables, 2 views, 2 procedures, and 22 triggers**. The demo has two societies, six households (five active), three delivered tankers, one pending booking, three confirmed invoices, and five bills. Pune's October expense is INR 9,000.01, split into 3,000.01 / 3,000.00 / 3,000.00. Bengaluru's INR 3,200.00 splits into two INR 1,600.00 bills. Household payments total INR 3,100.00; supplier payments total INR 2,000.00. Every reconciliation difference in queries.sql should be 0.00. The LEFT JOIN shows the inactive household with no bill.
-
-## Binary logging privilege prerequisite and safe recovery
-
-On this local server, initial installation reached the first trigger and failed with:
-
-```text
-ER_BINLOG_CREATE_ROUTINE_NEED_SUPER:
-You do not have the SUPER privilege and binary logging is enabled
-(you *might* want to use the less safe log_bin_trust_function_creators variable)
-```
-
-The server has `log_bin=1` and `log_bin_trust_function_creators=0`. This is a server privilege requirement, not an application credential failure. Tables and views already exist; do not delete or recreate them. An administrator can run the reviewed trigger definitions using an appropriately privileged migration account. Alternatively, for this local development server, an administrator can explicitly allow routine/trigger creators:
-
-```sql
--- Administrator action only; not executed automatically by WASSER.
-SET GLOBAL log_bin_trust_function_creators = 1;
-```
-
-That setting changes server-wide binary-logging trust policy until restart or another change. Have the administrator decide whether it is appropriate; granting SUPER to the runtime account is unnecessary. After the administrator resolves the prerequisite, resume additive installation:
-
-```powershell
-node server/scripts/run-sql.js schema.sql --resume
-node server/scripts/run-sql.js seed.sql
-node server/scripts/run-sql.js queries.sql
-node server/scripts/check-phase2.js
-```
-
-`--resume` preserves objects already present and creates only missing ones. Use it only for recovery of this reviewed installation: it does not compare definitions or migrate existing objects. Seeding refuses to run until all 22 triggers and both procedures exist. No administrator setting or privilege grant was executed during this implementation.
-
-## Actual execution report — 15 November 2026
-
-| Script/check | Result |
+| Table | Unique column sets (besides primary key) |
 | --- | --- |
-| Existing `001_create_database.sql` | Inspected and preserved; not executed |
-| `schema.sql` | Partially executed: 12 tables and 2 views created; stopped at first trigger with ER_BINLOG_CREATE_ROUTINE_NEED_SUPER |
-| `seed.sql` | Not executed; no sample records inserted |
-| `queries.sql` | All 10 statements executed successfully against the empty tables; business reports returned no rows |
-| `check-db.js` | Passed: MySQL 8.0.46 connected to wasser |
-| JavaScript syntax checks for new runners | Passed |
-| `check-phase2.js` | Failed as expected on incomplete inventory: 0 of 22 triggers installed; 0 of 2 procedures installed |
+| Society | `(name, address)` |
+| Household | `(society_id, unit_number)`; `(household_id, society_id)` |
+| Supplier | `(gstin)` |
+| TankerBooking | `(booking_id, society_id)` |
+| Delivery | `(booking_id)`; `(receipt_number)` |
+| BillingPeriod | `(society_id, month_start)`; `(billing_period_id, society_id)` |
+| SupplierInvoice | `(delivery_id)` |
+| SupplierPayment | `(reference_number)` |
+| Bill | `(billing_period_id, household_id)` |
+| Payment | `(reference_number)` |
+| WaterAllocation | `(delivery_id, household_id)` |
+| User | `(email)` |
 
-Full billing and constraint verification is **pending**, not passed. The verifier checks installed object counts, reconciliation and equal shares, and rejects invalid transitions, overpayments, closed-month invoice changes, and duplicate monthly generation. Its negative DML checks use rollback and do not delete existing records. Run it after safe installation resumption and demo seeding. No destructive schema statements, credential changes, privilege changes, commits to Git, or pushes were performed.
+## Supplier billing versus household billing
+
+**Supplier billing (society pays the water supplier):** `Supplier → TankerBooking → Delivery → SupplierInvoice → SupplierPayment`. Each booking chooses one supplier and one society. A booking may have no delivery yet, or one delivery; a delivery may have no invoice yet, or one invoice. These optional one-to-one relationships come from the unique, non-null foreign keys on `Delivery.booking_id` and `SupplierInvoice.delivery_id`. An invoice may receive multiple partial supplier payments. Supplier and society are obtained through the booking; SupplierInvoice has no direct supplier_id or society_id.
+
+**Household billing (resident pays the society):** `Society → BillingPeriod → Bill → Payment`, with `Household → Bill`. A period belongs to one society; each bill belongs to one period and one household. Multiple partial household payments can settle a bill. A household can receive bills over many periods, and a period can contain bills for many households. `Bill` associates those two entities, with one bill per household per period.
+
+**How the two flows meet:** `GenerateMonthlyBills` sums CONFIRMED supplier invoice amounts for the society by invoice_date month, records the expense and eligibility snapshot in BillingPeriod, and divides the expense equally among eligible households. Integer-paise remainders go to ascending household IDs. Supplier payment dates and allocated litres do not determine household charges. This is a procedure-based calculation, **not a direct foreign-key relationship** between SupplierInvoice and BillingPeriod or Bill, so no such edge is drawn.
+
+## Important constraints for the viva
+
+- `Bill(billing_period_id, society_id)` references BillingPeriod, and `Bill(household_id, society_id)` references Household. Together they prevent billing a household from a different society. Bill.society_id is part of these two composite foreign keys; it has no separate foreign key to Society.
+- User.society_id directly references Society. `(household_id, society_id)` also references Household. household_id may be NULL, so an account can belong to a society without a household; a CHECK requires RESIDENT accounts to have a household. A household can have many accounts because this foreign key is not unique. Any linked household must belong to the account's society.
+- WaterAllocation connects deliveries and households, resolving a many-to-many relationship: each row stores the litres from one delivery allocated to one household, with at most one row per delivery/household pair. The insert trigger checks the same society and prevents allocating more than delivered. Unallocated water is allowed.
+- BillingPeriod has at most one row per society/month. The billing procedure creates one bill per eligible household, but foreign keys alone allow a period with zero bills. Therefore the ER edge is `0..*`, not `1..*`.
+- Every foreign key is mandatory except the optional household association on User. A mandatory child-to-parent link does not require a parent to have children.
+- Supplier.gstin is nullable and unique; MySQL allows multiple NULL values in a unique column. SupplierInvoice.invoice_number is **not** unique. Household.phone, Supplier.phone and all payment method fields are included in the diagram.
+- There are no cascading delete/update actions specified. InnoDB uses restrictive foreign-key behavior. Triggers additionally make receipts, payments, allocations, bills and billing periods immutable and enforce booking/invoice workflow rules. The ER diagram shows structural constraints; it does not claim workflow rules are foreign keys.
+- HouseholdBalance derives each bill's paid and outstanding amounts from Bill and Payment. SupplierInvoiceBalance derives the corresponding supplier amounts from SupplierInvoice and SupplierPayment. These are views, not stored balance tables.
+
+## Simple viva explanation
+
+“A society has households and books water tankers from suppliers. A booking can produce one delivery receipt. That delivery can have one supplier invoice, which the society may pay in parts. WaterAllocation records how delivered water is distributed to households. Each month, the billing procedure totals confirmed supplier expenses and splits the cost equally among eligible households. It stores a billing period and individual household bills. Residents may pay their bills in parts. SupplierPayment records money going to suppliers; Payment records money collected from households. User stores society accounts and optionally links them to a household. Composite foreign keys ensure bills and linked accounts stay within the correct society.”
+
+## Schema verification
+
+Run `python docs/generate-er-diagram.py` from the repository root. The generator reads schema.sql only, checks the 12-table and 14-foreign-key inventory, validates referenced columns, and generates both diagrams from those definitions. It compares every Mermaid entity/attribute/type/key marker and every relationship with the parsed SQL before reporting success, and parses the SVG as XML. No SQL, credentials, network access, or database writes are involved. This verifies the documentation against the SQL file; it does not independently inspect the live MySQL server.
+
+Reviewed corrections to the previous diagram: completed omitted attributes and type details; corrected BillingPeriod → Bill optionality; documented composite keys explicitly; and separated the two payment flows. All 12 actual base tables are represented, including BillingPeriod. No inferred direct invoice-to-period, supplier-to-invoice, or Society-to-Bill foreign key has been added.
+
+## Official frontend palette: Aqua Mint
+
+| Color | Hex | Intended use |
+| --- | --- | --- |
+| Deep Teal | `#073B4C` | Primary text and strong headings |
+| Aqua | `#00A6A6` | Primary actions and accents |
+| Mint | `#6EE7C8` | Supporting highlights |
+| Mist | `#E8FFF8` | Soft backgrounds |
+| White | `#FFFFFF` | Surfaces |
+
+These five colors are the official frontend palette. This documentation does not change frontend styles. The printable diagram uses Aqua Mint colors and written labels to distinguish billing flows.
